@@ -25,6 +25,10 @@ const calendarRef    = ref(null)
 
 const eventsStore = useEventsStore()
 
+const currentView = ref(props.view)
+const isToday = ref(false)
+const currentDate = ref('')
+
 /* ───────────── handlers ───────────── */
 function openDialog(ev, date, el, time = null) {
   selectedEvent.value = ev
@@ -116,11 +120,42 @@ watch(() => eventsStore.events, (newEvents) => {
 }, { deep: true })
 
 /* ───────────── calendar options ───────────── */
+function updateTodayState() {
+  const calendarApi = calendarRef.value?.getApi()
+  if (!calendarApi) return
+
+  const currentDateObj = calendarApi.getDate()
+  const today = new Date()
+  
+  // Reset time components to compare only dates
+  currentDateObj.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  
+  isToday.value = currentDateObj.getTime() === today.getTime()
+}
+
+function updateCurrentDate() {
+  const calendarApi = calendarRef.value?.getApi()
+  if (!calendarApi) return
+  currentDate.value = calendarApi.getCurrentData()?.viewTitle || ''
+}
+
 const calendarOptions = {
   plugins:[dayGridPlugin,timeGridPlugin,interactionPlugin],
   initialView: props.view,
-  headerToolbar:{ left:'today,prev,next', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay' },
-  buttonText:{ prev:'Back', next:'Next' },
+  headerToolbar: {
+    left: '',
+    center: '',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+  },
+  buttonText:{ 
+    prev:'Back', 
+    next:'Next',
+    today: 'Today',
+    month: 'Month',
+    week: 'Week',
+    day: 'Day'
+  },
   editable:true, 
   selectable:true, 
   selectMirror:true, 
@@ -186,13 +221,71 @@ const calendarOptions = {
     }
   },
   eventOrder: 'start',
-  eventOrderStrict: true
+  eventOrderStrict: true,
+  datesSet: function() {
+    updateTodayState()
+    updateCurrentDate()
+  },
+  viewDidMount: function() {
+    updateTodayState()
+    updateCurrentDate()
+  }
 }
+
+watch(() => props.view, (newView) => {
+  currentView.value = newView
+  nextTick(() => {
+    updateTodayState()
+    updateCurrentDate()
+  })
+})
+
+// Watch for calendar initialization
+watch(() => calendarRef.value?.getApi(), (api) => {
+  if (api) {
+    updateTodayState()
+    updateCurrentDate()
+  }
+}, { immediate: true })
 </script>
 
 <template>
   <div class="calendar-container">
-    <div class="calender-view-title">Calendar View</div>
+    <div class="calendar-header">
+      <div class="header-top">
+        <div class="header-title">Calendar View</div>
+        <div class="view-buttons">
+          <button 
+            v-for="view in ['dayGridMonth', 'timeGridWeek', 'timeGridDay']" 
+            :key="view"
+            :class="{ active: currentView === view }"
+            @click="calendarRef?.getApi()?.changeView(view); currentView = view"
+          >
+            {{ view === 'dayGridMonth' ? 'Month' : view === 'timeGridWeek' ? 'Week' : 'Day' }}
+          </button>
+        </div>
+      </div>
+      <div class="header-bottom">
+        <div class="navigation-buttons">
+          <button 
+            class="today-button" 
+            :class="{ active: isToday }"
+            @click="calendarRef?.getApi()?.today()"
+          >Today</button>
+          <button 
+            class="prev-button" 
+            @click="calendarRef?.getApi()?.prev()"
+          >Back</button>
+          <button 
+            class="next-button" 
+            @click="calendarRef?.getApi()?.next()"
+          >Next</button>
+        </div>
+        <div class="current-date">
+          {{ currentDate }}
+        </div>
+      </div>
+    </div>
     <FullCalendar ref="calendarRef" :options="calendarOptions" />
 
     <EventDialog
@@ -214,11 +307,117 @@ const calendarOptions = {
   padding: 1.5rem;
 }
 
-.calender-view-title {
-  font-size: 28px;
-  color: #43425D;
+.calendar-header {
   margin-bottom: 1.5rem;
-  text-align: left;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header-title {
+  font-size: 18px;
+  color: #4D4F5C;
+}
+
+.view-buttons {
+  display: flex;
+  border: 1px solid #D7DAE2;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 32px;
+}
+
+.view-buttons button {
+  padding: 0 1rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #D7DAE2;
+  font: normal normal normal 13px/20px Source Sans Pro;
+  color: #4D4F5C;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-buttons button:last-child {
+  border-right: none;
+}
+
+.view-buttons button.active {
+  color: #3B86FF;
+  font-weight: 600;
+  background-color: transparent;
+}
+
+.view-buttons button:hover {
+  color: #3B86FF;
+}
+
+.header-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.navigation-buttons {
+  display: flex;
+  border: 1px solid #D7DAE2;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 32px;
+  position: absolute;
+  left: 0;
+}
+
+.today-button,
+.prev-button,
+.next-button {
+  padding: 0 1rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #D7DAE2;
+  font: normal normal normal 13px/20px Source Sans Pro;
+  color: #4D4F5C;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.today-button:last-child,
+.prev-button:last-child,
+.next-button:last-child {
+  border-right: none;
+}
+
+.today-button:hover,
+.prev-button:hover,
+.next-button:hover {
+  color: #3B86FF;
+}
+
+.today-button.active {
+  color: #3B86FF;
+  font-weight: 600;
+  background-color: transparent;
+}
+
+.current-date {
+  font: normal normal normal 18px/24px Source Sans Pro;
+  color: #A3A6B4;
+  text-align: center;
+}
+
+:deep(.fc-toolbar) {
+  display: none !important;
 }
 
 :deep(.fc) {
@@ -300,48 +499,7 @@ const calendarOptions = {
 }
 
 :deep(.fc-button-group) {
-  display: flex;
-  border: 1px solid #D7DAE2 !important;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 2px 3px #0000000D;
-}
-
-:deep(.fc-button) {
-  background: transparent !important;
-  border: none;
-  border-right: 1px solid #D7DAE2 !important;
-  padding: 0.5rem 1rem;
-  font: normal normal normal 13px/20px Source Sans Pro;
-  color: #4D4F5C;
-  text-transform: capitalize;
-  height: auto;
-  margin: 0;
-  border-radius: 0;
-  box-shadow: none !important;
-}
-
-:deep(.fc-button:hover) {
-  color: #3B86FF !important;
-}
-
-:deep(.fc-button:last-child) {
-  border-right: none !important;
-}
-
-:deep(.fc-button-active) {
-  background: transparent !important;
-  color: #3B86FF !important;
-  font-weight: 600;
-  border-color: #D7DAE2 !important;
-  box-shadow: none !important;
-}
-
-:deep(.fc-button:focus) {
-  box-shadow: none !important;
-  border-color: #D7DAE2 !important;
-  background: transparent !important;
-  color: #3B86FF !important;
+  display: none !important;
 }
 
 :deep(.fc-event) {
