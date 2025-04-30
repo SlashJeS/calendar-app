@@ -38,17 +38,17 @@ const dialogStyle = computed(() => {
   if (!props.clickedElement) return { top:'50%', left:'50%', transform:'translate(-50%, -50%)' }
   const rect  = props.clickedElement.getBoundingClientRect()
   const vh    = window.innerHeight
-  const dH    = 470
+  const dH    = 328
   const fitsBelow = rect.bottom + dH <= vh
   return {
     top : `${fitsBelow ? rect.bottom - 10 : rect.top - dH}px`,
-    left: `${rect.left + rect.width / 2 - 150}px`
+    left: `${rect.left + rect.width / 2 - 100}px`
   }
 })
 const triangleClass = computed(() => {
   if (!props.clickedElement) return ''
   const rect = props.clickedElement.getBoundingClientRect()
-  return rect.bottom + 470 > window.innerHeight ? 'triangle-bottom' : 'triangle-top'
+  return rect.bottom + 328 > window.innerHeight ? 'triangle-bottom' : 'triangle-top'
 })
 
 /* ───────────── watches ───────────── */
@@ -271,7 +271,7 @@ watch(() => props.date, (newDate) => {
   box-shadow: 0 3px 18px #00000029;
   border: 1px solid #43425D;
   border-radius: 10px;
-  width: 300px;
+  width: 201px;
   z-index: 1001;
 }
 
@@ -299,7 +299,7 @@ watch(() => props.date, (newDate) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 20px 0 20px;
+  padding: 10px 20px 0 20px;
 }
 
 .dialog-header h2 {
@@ -327,11 +327,11 @@ watch(() => props.date, (newDate) => {
 }
 
 .dialog-content {
-  padding: 20px;
+  padding: 10px 20px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .form-group label {
@@ -345,7 +345,7 @@ watch(() => props.date, (newDate) => {
 
 .form-input {
   width: 100%;
-  padding: 8px 0;
+  padding: 0;
   border: none;
   border-bottom: 1px solid #D6D6D6;
   font: normal normal normal 12px/20px Source Sans Pro;
@@ -373,8 +373,8 @@ watch(() => props.date, (newDate) => {
 .dialog-actions {
   display: flex;
   justify-content: space-between;
-  padding: 0 40px 20px 40px;
-  gap: 10px;
+  padding: 0 20px 10px 20px;
+  gap: 8px;
 }
 
 .delete-button {
@@ -428,8 +428,8 @@ textarea.form-input {
 }
 
 .color-preview {
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   border-radius: 4px;
   border: 1px solid #D6D6D6;
   cursor: pointer;
