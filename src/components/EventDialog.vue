@@ -33,7 +33,7 @@ const formattedDate = computed(() =>
       : ''
 )
 
-/* dialog position */
+/* ───────────── dialog position ───────────── */
 const dialogStyle = computed(() => {
   if (!props.clickedElement) return { top:'50%', left:'50%', transform:'translate(-50%, -50%)' }
   const rect  = props.clickedElement.getBoundingClientRect()
@@ -41,7 +41,7 @@ const dialogStyle = computed(() => {
   const dH    = 470
   const fitsBelow = rect.bottom + dH <= vh
   return {
-    top : `${fitsBelow ? rect.bottom - 10 : rect.top - dH - rect.height}px`,
+    top : `${fitsBelow ? rect.bottom - 10 : rect.top - dH}px`,
     left: `${rect.left + rect.width / 2 - 150}px`
   }
 })
@@ -57,8 +57,7 @@ watch(() => props.event, ev => {
     resetFields()
     return
   }
-  
-  // Only update fields if we're editing an existing event
+
   text.value = ev.title || ''
   time.value = new Date(ev.start).toLocaleTimeString('en-US', {
     hour12: false,
@@ -74,7 +73,6 @@ watch(() => props.event, ev => {
 
 watch(() => props.date, d => {
   if (d && !props.event) {
-    // For new events, always use the provided date
     const selectedDate = new Date(d)
     time.value = selectedDate.toLocaleTimeString('en-US', {
       hour12: false,
@@ -117,9 +115,9 @@ function handleSave() {
   const [h, m] = time.value.split(':')
   const when = selectedDate.value || new Date(props.date)
   when.setHours(parseInt(h), parseInt(m), 0, 0)
-  
+
   const finalColor = color.value.startsWith('#') ? color.value : `#${color.value}`
-  
+
   const data = {
     title: text.value.trim(),
     start: when,
@@ -155,7 +153,6 @@ function toggleColorPicker() {
 function updateColor(event) {
   const newColor = event.target.value
   color.value = newColor
-  // Update the color preview immediately
   const colorPreview = document.querySelector('.color-preview')
   if (colorPreview) {
     colorPreview.style.backgroundColor = newColor
@@ -169,7 +166,6 @@ watch(() => props.modelValue, (newValue) => {
   }
 })
 
-// Initialize selected date
 watch(() => props.date, (newDate) => {
   if (newDate) {
     selectedDate.value = new Date(newDate)
@@ -192,11 +188,11 @@ watch(() => props.date, (newDate) => {
       <div class="dialog-content">
         <div class="form-group">
           <label>Event Name</label>
-          <input 
-            v-model="text" 
-            type="text" 
-            maxlength="30" 
-            class="form-input" 
+          <input
+            v-model="text"
+            type="text"
+            maxlength="30"
+            class="form-input"
             :class="{ 'invalid': !isTitleValid && showValidationError }"
           />
           <div v-if="!isTitleValid && showValidationError" class="error-message">Event name is required</div>
@@ -205,8 +201,8 @@ watch(() => props.date, (newDate) => {
         <div class="form-group">
           <label>Event Date</label>
           <div class="input-with-icon">
-            <input 
-              type="date" 
+            <input
+              type="date"
               class="form-input"
               :value="selectedDate ? selectedDate.toISOString().split('T')[0] : ''"
               @input="updateSelectedDate"
@@ -271,7 +267,7 @@ watch(() => props.date, (newDate) => {
 .dialog {
   position: absolute;
   background: #FFFFFF;
-  box-shadow: 0px 3px 18px #00000029;
+  box-shadow: 0 3px 18px #00000029;
   border: 1px solid #43425D;
   border-radius: 10px;
   width: 300px;
@@ -307,7 +303,7 @@ watch(() => props.date, (newDate) => {
 
 .dialog-header h2 {
   font: normal normal normal 12px/25px Source Sans Pro;
-  letter-spacing: 0px;
+  letter-spacing: 0;
   color: #D6D6D6;
   margin: 0;
 }
@@ -341,7 +337,7 @@ watch(() => props.date, (newDate) => {
   display: block;
   text-align: left;
   font: normal normal normal 9px/20px Source Sans Pro;
-  letter-spacing: 0px;
+  letter-spacing: 0;
   color: #D6D6D6;
   margin-bottom: -10px;
 }
@@ -383,7 +379,7 @@ watch(() => props.date, (newDate) => {
 .delete-button {
   text-align: right;
   font: normal normal normal 12px/20px Source Sans Pro;
-  letter-spacing: 0px;
+  letter-spacing: 0;
   color: #FF5F5F;
   background: none;
   border: none;
@@ -394,7 +390,7 @@ watch(() => props.date, (newDate) => {
 .cancel-button {
   text-align: right;
   font: normal normal normal 12px/20px Source Sans Pro;
-  letter-spacing: 0px;
+  letter-spacing: 0;
   color: #FF5F5F;
   background: none;
   border: none;
@@ -404,7 +400,7 @@ watch(() => props.date, (newDate) => {
 .save-button {
   text-align: right;
   font: normal normal normal 12px/25px Source Sans Pro;
-  letter-spacing: 0px;
+  letter-spacing: 0;
   color: #6A6996;
   background: none;
   border: none;

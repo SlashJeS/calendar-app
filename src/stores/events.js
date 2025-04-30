@@ -3,15 +3,12 @@ import { ref, computed } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 
 export const useEventsStore = defineStore('events', () => {
-  // Load events from localStorage on initialization
   const events = ref(JSON.parse(localStorage.getItem('calendarEvents') || '[]'))
 
-  // Save events to localStorage whenever they change
   function saveEvents() {
     localStorage.setItem('calendarEvents', JSON.stringify(events.value))
   }
 
-  // Add a new event
   function addEvent(event) {
     events.value.push({
       id: uuidv4(),
@@ -24,7 +21,6 @@ export const useEventsStore = defineStore('events', () => {
     saveEvents()
   }
 
-  // Update an existing event
   function updateEvent(eventId, updatedEvent) {
     const index = events.value.findIndex(e => e.id === eventId)
     if (index !== -1) {
@@ -39,17 +35,14 @@ export const useEventsStore = defineStore('events', () => {
     }
   }
 
-  // Delete an event
   function deleteEvent(eventId) {
     const newEvents = events.value.filter(e => e.id !== eventId)
     events.value = newEvents
     saveEvents()
   }
 
-  // Get all events
   const getAllEvents = computed(() => events.value)
 
-  // Get events for a specific date
   function getEventsForDate(date) {
     return events.value.filter(event => {
       const eventDate = new Date(event.start)

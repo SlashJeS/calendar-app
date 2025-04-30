@@ -31,9 +31,7 @@ function openDialog(ev, date, el, time = null) {
   selectedDate.value = new Date(date)
   clickedElement.value = el
 
-  // Only set the time if it's a new event (not editing)
   if (!ev && time) {
-    // Use nextTick to ensure the dialog is mounted before trying to set the time
     nextTick(() => {
       const eventDialog = document.querySelector('.dialog')
       if (eventDialog) {
@@ -57,13 +55,11 @@ function handleEventClick(info) {
     notes: info.event.extendedProps?.notes || ''
   }
 
-  // Get the clicked element's position for dialog placement
   const clickedElement = info.jsEvent.target.closest('.fc-event') || info.jsEvent.target
   openDialog(eventData, info.event.start, clickedElement)
 }
 
 function handleDateSelect(info) {
-  // Get the exact date and time from the selection
   const clickedDate = new Date(info.start)
   const formattedTime = clickedDate.toLocaleTimeString('en-US', {
     hour12: false,
@@ -71,12 +67,10 @@ function handleDateSelect(info) {
     minute: '2-digit'
   })
 
-  // Get the clicked element's position for dialog placement
   const clickedElement = info.jsEvent.target.closest('.fc-timegrid-slot') ||
                         info.jsEvent.target.closest('.fc-daygrid-day') ||
                         info.jsEvent.target
 
-  // Create a new date object to avoid reference issues
   const selectedDate = new Date(clickedDate)
   openDialog(null, selectedDate, clickedElement, formattedTime)
 }
@@ -97,26 +91,22 @@ function handleDelete() {
   emit('delete', props.event.id)
   close()
 
-  // Force calendar to update
   const calendarApi = calendarRef.value?.getApi()
   if (calendarApi) {
-    // Remove the event from the calendar's internal state
     const eventToRemove = calendarApi.getEventById(props.event.id)
     if (eventToRemove) {
       eventToRemove.remove()
     }
-    // Refresh the calendar view
     calendarApi.render()
   }
 }
 
 function refreshEvents() { calendarRef.value?.getApi()?.refetchEvents() }
 
-/* react to pinia changes */
+/* ─────────────  react to pinia changes ───────────── */
 watch(() => eventsStore.events, (newEvents) => {
   const calendarApi = calendarRef.value?.getApi()
   if (calendarApi) {
-    // Remove all events and re-add them
     calendarApi.getEvents().forEach(event => event.remove())
     newEvents.forEach(event => {
       calendarApi.addEvent(event)
@@ -291,9 +281,8 @@ const calendarOptions = {
   display: flex;
   border: 1px solid #D7DAE2 !important;
   border-radius: 4px;
-  box-shadow: none !important;
   overflow: hidden;
-  box-shadow: 0px 2px 3px #0000000D;
+  box-shadow: 0 2px 3px #0000000D;
 }
 
 :deep(.fc-button) {
