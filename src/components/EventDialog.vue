@@ -85,12 +85,12 @@ watch(() => props.date, d => {
 /* ───────────── actions ───────────── */
 function resetFields() {
   text.value = ''
-  time.value = '12:00'
+  notes.value = ''
   color.value = '#3B86FF'
   if (colorInput.value) {
     colorInput.value.value = '#3B86FF'
   }
-  notes.value = ''
+
 }
 function close() { emit('update:modelValue', false) }
 
@@ -160,10 +160,11 @@ function updateColor(event) {
 }
 
 watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    showValidationError.value = false
-    isTitleValid.value = true
+  if (newValue && !props.event) {
+    resetFields()
   }
+  showValidationError.value = false
+  isTitleValid.value = true
 })
 
 watch(() => props.date, (newDate) => {
