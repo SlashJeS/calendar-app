@@ -1,83 +1,60 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
-
-const STORAGE_KEY = 'calendar-events'
+import { ref, computed } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useEventsStore = defineStore('events', () => {
-  // Load events from localStorage or initialize empty array
-  const events = ref(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'))
+  // Load events from localStorage on initialization
+  const events = ref(JSON.parse(localStorage.getItem('calendarEvents') || '[]'))
 
-  // Watch for changes and persist to localStorage
-  watch(events, (newEvents) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newEvents))
-  }, { deep: true })
+  // Save events to localStorage whenever they change
+  function saveEvents() {
+    localStorage.setItem('calendarEvents', JSON.stringify(events.value))
+  }
 
+  // Add a new event
   function addEvent(event) {
-    const newEvent = {
-      id: Date.now(),
-      title: event.text.slice(0, 30),
-      start: new Date(event.date),
-      backgroundColor: event.color,
-      borderColor: event.color,
-      extendedProps: {
-        text: event.text,
-        time: event.time
+    events.value.push({
+      id: uuidv4(),
+      title: event.title,
+      start: event.start,
+      color: event.color,
+      notes: event.notes || '',
+      allDay: false
+    })
+    saveEvents()
+  }
+
+  // Update an existing event
+  function updateEvent(eventId, updatedEvent) {
+    const index = events.value.findIndex(e => e.id === eventId)
+    if (index !== -1) {
+      events.value[index] = {
+        ...events.value[index],
+        title: updatedEvent.title,
+        start: updatedEvent.start,
+        color: updatedEvent.color,
+        notes: updatedEvent.notes
       }
+      saveEvents()
     }
-    
-    // Set time if provided
-    if (event.time) {
-      const [hours, minutes] = event.time.split(':')
-      newEvent.start.setHours(parseInt(hours), parseInt(minutes))
-    }
-    
-    events.value.push(newEvent)
-    return newEvent
   }
 
-  function updateEvent(id, updates) {
-    const index = events.value.findIndex(event => event.id === id)
-    if (index === -1) return null
-
-    const updatedEvent = {
-      ...events.value[index],
-      ...updates,
-      title: updates.text ? updates.text.slice(0, 30) : events.value[index].title,
-      backgroundColor: updates.color || events.value[index].backgroundColor,
-      borderColor: updates.color || events.value[index].borderColor,
-      extendedProps: {
-        ...events.value[index].extendedProps,
-        text: updates.text || events.value[index].extendedProps.text,
-        time: updates.time || events.value[index].extendedProps.time
-      }
-    }
-
-    // Update time if provided
-    if (updates.time) {
-      const [hours, minutes] = updates.time.split(':')
-      updatedEvent.start = new Date(updatedEvent.start)
-      updatedEvent.start.setHours(parseInt(hours), parseInt(minutes))
-    }
-
-    events.value[index] = updatedEvent
-    return updatedEvent
+  // Delete an event
+  function deleteEvent(eventId) {
+    const newEvents = events.value.filter(e => e.id !== eventId)
+    events.value = newEvents
+    saveEvents()
   }
 
-  function deleteEvent(id) {
-    events.value = events.value.filter(event => event.id !== id)
-  }
+  // Get all events
+  const getAllEvents = computed(() => events.value)
 
+  // Get events for a specific date
   function getEventsForDate(date) {
     return events.value.filter(event => {
       const eventDate = new Date(event.start)
       return eventDate.toDateString() === date.toDateString()
-    }).sort((a, b) => {
-      return new Date(a.start).getTime() - new Date(b.start).getTime()
     })
-  }
-
-  function getEventsForCalendar() {
-    return events.value
   }
 
   return {
@@ -85,7 +62,7 @@ export const useEventsStore = defineStore('events', () => {
     addEvent,
     updateEvent,
     deleteEvent,
-    getEventsForDate,
-    getEventsForCalendar
+    getAllEvents,
+    getEventsForDate
   }
-}) 
+})
