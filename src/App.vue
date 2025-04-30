@@ -25,8 +25,7 @@ const view = ref('dayGridMonth')
 }
 
 .calendar-wrapper {
-  width: 100%;
-  max-width: 1170px;
+  width: 67%;
   min-height: 0;
   background-color: white;
   border-radius: 8px;
@@ -38,11 +37,14 @@ const view = ref('dayGridMonth')
 
 @media (max-width: 1200px) {
   .calendar-wrapper {
-    max-width: 95vw;
+    width: 85%;
   }
 }
 
 @media (max-width: 768px) {
+  .calendar-wrapper {
+    width: 95%;
+  }
   .app-container {
     padding: 0.5rem;
   }

@@ -121,9 +121,17 @@ const calendarOptions = {
   initialView: props.view,
   headerToolbar:{ left:'today,prev,next', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay' },
   buttonText:{ prev:'Back', next:'Next' },
-  editable:true, selectable:true, selectMirror:true, dayMaxEvents:true, weekends:true,
-  height:'100%', contentHeight:'auto', aspectRatio:1.35,
-  eventDisplay:'block', displayEventTime:true, displayEventEnd:true,
+  editable:true, 
+  selectable:true, 
+  selectMirror:true, 
+  dayMaxEvents:true, 
+  weekends:true,
+  height:'100%', 
+  contentHeight:'auto', 
+  aspectRatio:1.35,
+  eventDisplay:'block', 
+  displayEventTime:true, 
+  displayEventEnd:true,
   eventTimeFormat:{ hour:'2-digit', minute:'2-digit', hour12:false },
   slotMinTime: '00:00:00',
   slotMaxTime: '24:00:00',
@@ -143,11 +151,25 @@ const calendarOptions = {
     endTime: '24:00',
     daysOfWeek: [0, 1, 2, 3, 4, 5, 6]
   },
-
+  select: function(info) {
+    const clickedDate = new Date(info.start)
+    const formattedTime = '12:00'
+    const clickedElement = info.jsEvent.target.closest('.fc-daygrid-day') || info.jsEvent.target
+    openDialog(null, clickedDate, clickedElement, formattedTime)
+  },
+  dayCellDidMount: function(info) {
+    info.el.addEventListener('click', function(e) {
+      if (!e.target.closest('.fc-event')) {
+        const date = info.date
+        const formattedTime = '12:00'
+        const clickedElement = info.el
+        openDialog(null, date, clickedElement, formattedTime)
+      }
+    })
+  },
   events: eventsStore.getAllEvents,
-  eventClick : handleEventClick,
-  select     : handleDateSelect,
-  eventDrop  : handleMoveResize,
+  eventClick: handleEventClick,
+  eventDrop: handleMoveResize,
   eventResize: handleMoveResize,
 
   eventDidMount(info){
@@ -328,6 +350,7 @@ const calendarOptions = {
   border-radius: 4px;
   font-size: 0.875rem;
   border: none;
+  pointer-events: auto;
 }
 
 :deep(.fc-event-title) {
@@ -358,6 +381,8 @@ const calendarOptions = {
   border-right: 1px solid #EAF0F4;
   border-bottom: 1px solid #EAF0F4;
   min-height: 100px;
+  cursor: pointer;
+  position: relative;
 }
 
 :deep(.fc-daygrid-day:last-child) {
@@ -369,12 +394,25 @@ const calendarOptions = {
 }
 
 :deep(.fc-daygrid-day-frame) {
-  border: none;
+  height: 100%;
+  min-height: 100px;
+  pointer-events: none;
+}
+
+:deep(.fc-daygrid-day-events) {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
 }
 
 :deep(.fc-daygrid-day-bg) {
-  background-color: #FFFFFF;
-  border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: auto;
 }
 
 :deep(.fc-timegrid-slot) {
@@ -429,9 +467,23 @@ const calendarOptions = {
   padding: 0.5rem;
   font: normal normal normal 15px/20px Source Sans Pro;
   color: #43425D;
+  pointer-events: none;
 }
 
 :deep(.fc-daygrid-day-events) {
   margin-top: 0.25rem;
+}
+
+:deep(.fc-daygrid-bg-harness) {
+  box-shadow: 0px 3px 6px #00000029;
+  background-color: #FFFFFF;
+}
+:deep(.fc-highlight) {
+  box-shadow: 0px 3px 6px #00000029;
+  background-color: #FFFFFF;
+}
+
+:deep(.clickable-day-cell) {
+  cursor: pointer;
 }
 </style>
